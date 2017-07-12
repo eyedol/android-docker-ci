@@ -8,7 +8,7 @@ FROM ubuntu:16.04
 
 # Copy needed files
 #----------------------------------------------------------------------- #
-COPY ./files /
+COPY ./files/android-components-versions.sh /
 
 # Author
 # ---------------------------------------------------------------------- #
@@ -44,17 +44,21 @@ RUN mkdir -p /opt/android-sdk && cd /opt/android-sdk && \
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 ENV GRADLE_HOME /opt/gradle
 ENV ANDROID_HOME /opt/android-sdk
-ENV PATH ${PATH}:${GRADLE_HOME}/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/emulator
+ENV PATH ${PATH}:${GRADLE_HOME}/bin:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/tools
 # temporary workaround for issue https://issuetracker.google.com/issues/37137213
 ENV LD_LIBRARY_PATH ${ANDROID_HOME}/emulator/lib64/qt/lib
 
 # accept the license agreements of the SDK components
-RUN export ANDROID_LICENSES="$ANDROID_HOME/licenses" && \
-    [ -d $ANDROID_LICENSES ] || mkdir $ANDROID_LICENSES && \
-    [ -f $ANDROID_LICENSES/android-sdk-license ] || echo 8933bad161af4178b1185d1a37fbf41ea5269c55 > $ANDROID_LICENSES/android-sdk-license && \
-    [ -f $ANDROID_LICENSES/android-sdk-preview-license ] || echo 84831b9409646a918e30573bab4c9c91346d8abd > $ANDROID_LICENSES/android-sdk-preview-license && \
-    [ -f $ANDROID_LICENSES/intel-android-extra-license ] || echo d975f751698a77b662f1254ddbeed3901e976f5a > $ANDROID_LICENSES/intel-android-extra-license && \
-    unset ANDROID_LICENSES
+RUN ANDROID_LICENSES="$ANDROID_HOME/licenses" && \
+    mkdir $ANDROID_LICENSES && \
+    echo 8933bad161af4178b1185d1a37fbf41ea5269c55 > $ANDROID_LICENSES/android-sdk-license && \
+    echo 84831b9409646a918e30573bab4c9c91346d8abd > $ANDROID_LICENSES/android-sdk-preview-license && \
+    echo d975f751698a77b662f1254ddbeed3901e976f5a > $ANDROID_LICENSES/intel-android-extra-license
 
 # Install Android components
-RUN ./files/install_components.sh
+RUN COMPONENTS_FILE=/android-components-versions.sh && \
+    . "${COMPONENTS_FILE}" && \
+    # Install android components && \
+    sdkmanager  "$platforms" "$build_tools" "$extras" "$platform_tools" "$tools" "$system_images" && \
+    # Install android emulator called test without a UI && \
+    echo no | avdmanager create avd -n test -k "$system_images" | echo no

@@ -1,6 +1,4 @@
 #!/bin/bash
-
-set -e -x
 # Source the android components that needs to be installed
 COMPONENTS_FILE=./files/android-components-versions.sh
 source "${COMPONENTS_FILE}"
