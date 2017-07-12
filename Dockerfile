@@ -8,7 +8,8 @@ FROM ubuntu:16.04
 
 # Copy needed files
 #----------------------------------------------------------------------- #
-COPY ./files/android-components-versions.sh /
+COPY ./files/VERSION /
+# COPY ./files/create-component-file.sh /
 
 # Author
 # ---------------------------------------------------------------------- #
@@ -54,6 +55,20 @@ RUN ANDROID_LICENSES="$ANDROID_HOME/licenses" && \
     echo 8933bad161af4178b1185d1a37fbf41ea5269c55 > $ANDROID_LICENSES/android-sdk-license && \
     echo 84831b9409646a918e30573bab4c9c91346d8abd > $ANDROID_LICENSES/android-sdk-preview-license && \
     echo d975f751698a77b662f1254ddbeed3901e976f5a > $ANDROID_LICENSES/intel-android-extra-license
+
+# Create file for installing android components
+RUN VERSION=$(cat /VERSION) && \
+    MAJOR="$(echo $VERSION | cut -d '.' -f 1)" && \
+    echo "version :$MAJOR" && \
+    echo "platforms=\"platforms;android-${MAJOR}\"\n \
+    build_tools=\"build-tools;$VERSION\"\n \
+    extras=\"extras;android;m2repository\"\n \
+    platform_tools="platform-tools"\n \
+    tools="tools"\n \
+    system_images=\"system-images;android-${MAJOR};google_apis;armeabi-v7a\"\n \
+    \n" \
+    >> /android-components-versions.sh && \
+    chmod +x /android-components-versions.sh
 
 # Install Android components
 RUN COMPONENTS_FILE=/android-components-versions.sh && \
