@@ -21,7 +21,7 @@ docker build -t ${DOCKER_VERSION} -t ${DOCKER_LATEST} -f Dockerfile .
 echo ""
 
 echo "******* PUSHING ${DOCKER_VERSION} *******"
-#docker push ${DOCKER_VERSION}
+docker push ${DOCKER_VERSION}
 
 if [ "${LINK_TO_LATEST}" == "0" ]; then
     echo "Not linking to latest"
